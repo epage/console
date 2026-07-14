@@ -30,6 +30,11 @@ fn stdout_true_colors() -> &'static AtomicBool {
     static ENABLED: OnceLock<AtomicBool> = OnceLock::new();
     ENABLED.get_or_init(|| AtomicBool::new(default_true_colors_enabled(&Term::stdout())))
 }
+fn stdout_progress_integration() -> &'static AtomicBool {
+    static ENABLED: OnceLock<AtomicBool> = OnceLock::new();
+    ENABLED
+        .get_or_init(|| AtomicBool::new(Term::stdout().features().progress_integration_supported()))
+}
 fn stderr_colors() -> &'static AtomicBool {
     static ENABLED: OnceLock<AtomicBool> = OnceLock::new();
     ENABLED.get_or_init(|| AtomicBool::new(default_colors_enabled(&Term::stderr())))
@@ -37,6 +42,11 @@ fn stderr_colors() -> &'static AtomicBool {
 fn stderr_true_colors() -> &'static AtomicBool {
     static ENABLED: OnceLock<AtomicBool> = OnceLock::new();
     ENABLED.get_or_init(|| AtomicBool::new(default_true_colors_enabled(&Term::stderr())))
+}
+fn stderr_progress_integration() -> &'static AtomicBool {
+    static ENABLED: OnceLock<AtomicBool> = OnceLock::new();
+    ENABLED
+        .get_or_init(|| AtomicBool::new(Term::stderr().features().progress_integration_supported()))
 }
 
 /// Returns `true` if colors should be enabled for stdout.
@@ -57,6 +67,12 @@ pub fn true_colors_enabled() -> bool {
     stdout_true_colors().load(Ordering::Relaxed)
 }
 
+/// Returns `true` if the terminal-integrated progress should be enabled for stdout.
+#[inline]
+pub fn progress_integration() -> bool {
+    stdout_progress_integration().load(Ordering::Relaxed)
+}
+
 /// Forces colorization on or off for stdout.
 ///
 /// This overrides the default for the current process and changes the return value of the
@@ -73,6 +89,15 @@ pub fn set_colors_enabled(val: bool) {
 #[inline]
 pub fn set_true_colors_enabled(val: bool) {
     stdout_true_colors().store(val, Ordering::Relaxed)
+}
+
+/// Forces terminal-integrated progress on or off for stdout.
+///
+/// This overrides the default for the current process and changes the return value of the
+/// `progress_integration` function.
+#[inline]
+pub fn set_progress_integration(val: bool) {
+    stdout_progress_integration().store(val, Ordering::Relaxed)
 }
 
 /// Returns `true` if colors should be enabled for stderr.
@@ -93,6 +118,12 @@ pub fn true_colors_enabled_stderr() -> bool {
     stderr_true_colors().load(Ordering::Relaxed)
 }
 
+/// Returns `true` if the terminal-integrated progress should be enabled for stderr.
+#[inline]
+pub fn progress_integration_stderr() -> bool {
+    stderr_progress_integration().load(Ordering::Relaxed)
+}
+
 /// Forces colorization on or off for stderr.
 ///
 /// This overrides the default for the current process and changes the return value of the
@@ -109,6 +140,15 @@ pub fn set_colors_enabled_stderr(val: bool) {
 #[inline]
 pub fn set_true_colors_enabled_stderr(val: bool) {
     stderr_true_colors().store(val, Ordering::Relaxed)
+}
+
+/// Forces terminal-integrated progress on or off for stderr.
+///
+/// This overrides the default for the current process and changes the return value of the
+/// `progress_integration_stderr` function.
+#[inline]
+pub fn set_progress_integration_stderr(val: bool) {
+    stderr_progress_integration().store(val, Ordering::Relaxed)
 }
 
 /// Measure the width of a string in terminal characters.
