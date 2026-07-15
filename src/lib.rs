@@ -98,7 +98,7 @@ pub use crate::utils::{
     set_colors_enabled_stderr, set_progress_integration, set_progress_integration_stderr,
     set_true_colors_enabled, set_true_colors_enabled_stderr, style, true_colors_enabled,
     true_colors_enabled_stderr, truncate_str, Alignment, Attribute, Color, Emoji, Style,
-    StyledObject,
+    StyledObject, TermProgress,
 };
 
 #[cfg(all(feature = "ansi-parsing", feature = "alloc"))]

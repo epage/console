@@ -1076,6 +1076,100 @@ pub fn pad_str_with<'a>(
     Cow::Owned(rv)
 }
 
+#[derive(Clone, Debug)]
+pub struct TermProgress {
+    inner: anstyle_progress::TermProgress,
+    force: Option<bool>,
+    for_stderr: bool,
+}
+
+impl Default for TermProgress {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl TermProgress {
+    pub const fn new() -> Self {
+        Self {
+            inner: anstyle_progress::TermProgress::none(),
+            force: None,
+            for_stderr: false,
+        }
+    }
+
+    /// Forces terminal-integrated progress on or off.
+    ///
+    /// This overrides the automatic detection.
+    #[inline]
+    pub const fn force_styling(mut self, value: bool) -> Self {
+        self.force = Some(value);
+        self
+    }
+
+    /// Specifies that terminal-integrated progress is being written on stderr.
+    #[inline]
+    pub const fn for_stderr(mut self) -> Self {
+        self.for_stderr = true;
+        self
+    }
+
+    /// Specifies that terminal-integrated progress is being written on stdout.
+    ///
+    /// This is the default behaviour.
+    #[inline]
+    pub const fn for_stdout(mut self) -> Self {
+        self.for_stderr = false;
+        self
+    }
+
+    /// Start a progress indicator
+    ///
+    /// This starts in an indeterminate state
+    pub const fn start(mut self) -> Self {
+        self.inner = self
+            .inner
+            .status(anstyle_progress::TermProgressStatus::Normal);
+        self
+    }
+
+    /// Set progress percentage (between `0..=100`)
+    ///
+    /// Without setting this, progress will be indeterminate
+    pub const fn percent(mut self, percent: u8) -> Self {
+        self.inner = self.inner.percent(percent);
+        self
+    }
+
+    /// Start an error indicator
+    pub const fn error(mut self) -> Self {
+        self.inner = self
+            .inner
+            .status(anstyle_progress::TermProgressStatus::Error);
+        self
+    }
+
+    /// Remove the indicator
+    pub const fn remove(mut self) -> Self {
+        self.inner = self
+            .inner
+            .status(anstyle_progress::TermProgressStatus::Removed);
+        self
+    }
+}
+
+impl fmt::Display for TermProgress {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.force.unwrap_or_else(|| match self.for_stderr {
+            true => progress_integration_stderr(),
+            false => progress_integration(),
+        }) {
+            fmt::Display::fmt(&self.inner, f)?;
+        }
+        Ok(())
+    }
+}
+
 #[test]
 fn test_text_width() {
     let s = style("foo")
